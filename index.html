@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>板書ノート | Udemy講座メモまとめ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="board">
+  <div class="board-inner">
+    <span class="chalk-underline"></span>
+    <h1 class="board-title">板書ノート</h1>
+  </div>
+</header>
+
+<main>
+
+  <section id="form-section">
+    <h2 class="section-title">追加する</h2>
+    <div class="card">
+      <form id="entry-form" novalidate>
+        <div class="field-row">
+            <div class="field full">
+                <label for="f-title">講座名・板書タイトル</label>
+                <textarea id="f-title" placeholder="例）ゼロからのPython講座 第3章 リスト操作" rows="1"></textarea>
+                <span class="error-msg" id="err-title">タイトルを入力してください</span>
+            </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-category">カテゴリ</label>
+            <div class="category-inline">
+              <select id="f-category">
+                <option value="">選択してください</option>
+              </select>
+              <input type="text" id="f-category-new" placeholder="新しいカテゴリ名">
+              <button type="button" class="cat-toggle" id="cat-toggle-btn">新規</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="f-url">GoogleドキュメントURL</label>
+            <input type="url" id="f-url" placeholder="https://docs.google.com/document/d/...">
+            <span class="error-msg" id="err-url">正しいURLを入力してください</span>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field full">
+            <label for="f-memo">メモ（任意）</label>
+            <textarea id="f-memo" placeholder="学んだこと、つまずいた点など"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-ghost" id="reset-btn">クリア</button>
+          <button type="submit" class="btn-primary">追加する</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section id="list-section">
+    <h2 class="section-title">一覧</h2>
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="タイトル・メモで検索">
+      </div>
+    </div>
+    <div class="toolbar" id="category-filters"></div>
+    <div id="entry-list" class="is-list"></div>
+  </section>
+
+  <section id="data-section">
+    <div class="data-tools">
+      <span>全<span id="count-total">0</span>件</span>
+      <span>|</span>
+      <button id="export-btn">バックアップを書き出す（JSON）</button>
+      <span>|</span>
+      <label for="import-file" style="cursor:pointer; text-decoration:underline;">読み込む</label>
+      <input type="file" id="import-file" accept="application/json">
+    </div>
+  </section>
+
+</main>
+
+<footer>データはこのブラウザ内（localStorage）に保存されます。他の端末と共有したい場合は「バックアップを書き出す」をご利用ください。</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>
