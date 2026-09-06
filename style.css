@@ -123,6 +123,7 @@
     box-shadow: 0 0 0 3px rgba(30,64,52,0.12);
   }
   textarea{ resize: vertical; min-height: 40px; }
+  #f-progress, .edit-progress{ min-height: 0; height: 34px; }
   select{ cursor:pointer; }
   .category-inline{ display:flex; gap:8px; }
   .category-inline select{ flex: 1; }
@@ -210,6 +211,30 @@
     box-shadow: none;
   }
   .entry:last-child{ border-bottom: 1px solid var(--paper-line); }
+  .done-toggle{
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid var(--paper-line);
+    background: #fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 0;
+    margin-top: 2px;
+  }
+  .done-toggle:hover{ border-color: var(--board-green-light); }
+  .done-toggle .done-check{
+    font-size: 12px;
+    color: transparent;
+    line-height: 1;
+  }
+  .done-toggle.is-done{
+    background: var(--board-green);
+    border-color: var(--board-green);
+  }
+  .done-toggle.is-done .done-check{ color: var(--chalk-white); }
   .entry-main{
     display:flex;
     flex-direction:column;
@@ -283,7 +308,7 @@
   .details-toggle.is-visible{ display:block; }
   .details-toggle:hover{ color: var(--ink); }
   .details-toggle.is-open{ transform: rotate(180deg); }
-  .entry-memo{
+  .entry-progress{
     font-size: 11.5px;
     color: var(--ink-soft);
     margin: 2px 0 0 0; /* ←変更：上に2pxの余白を追加してバランスをとる */
@@ -292,10 +317,48 @@
     white-space:nowrap;
     cursor: default;
   }
-  .entry-memo.is-open{
+  .entry-progress.is-open{
     white-space: pre-wrap;
     overflow: visible;
     text-overflow: clip;
+  }
+  .progress-clickable{
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 1px 3px;
+    margin-left: -3px;
+  }
+  .progress-clickable:hover{
+    background: rgba(30,64,52,0.06);
+    color: var(--ink);
+  }
+  .progress-add-btn{
+    background:none;
+    border:none;
+    color: var(--ink-soft);
+    opacity: 0.65;
+    font-size: 11px;
+    padding: 1px 3px;
+    margin: 2px 0 0 -3px;
+    text-align:left;
+    border-radius: 3px;
+  }
+  .progress-add-btn:hover{
+    opacity: 1;
+    background: rgba(30,64,52,0.06);
+    color: var(--ink);
+  }
+  .progress-quick-input{
+    font-family: inherit;
+    font-size: 11.5px;
+    color: var(--ink);
+    padding: 3px 6px;
+    margin-top: 2px;
+    border: 1px solid var(--board-green-light);
+    border-radius: 3px;
+    background: var(--paper);
+    width: 100%;
+    box-shadow: 0 0 0 3px rgba(30,64,52,0.1);
   }
   .entry-bottom{
     display:flex;
@@ -323,10 +386,10 @@
     background: var(--paper);
     color: var(--ink);
   }
-  .edit-title{ flex: 2; min-width: 0; resize: vertical; min-height: 40px; }
-  .edit-category{ flex: 1; min-width: 0; cursor:pointer; }
+  .edit-title{ flex: 4; min-width: 0; resize: vertical; min-height: 40px; }
+  .edit-category{ flex: 0 0 110px; min-width: 0; cursor:pointer; }
   .edit-url{ flex: 1; min-width: 0; }
-  .edit-memo{ flex: 1; min-width: 0; resize: vertical; min-height: 40px; }
+  .edit-progress{ flex: 1; min-width: 0; resize: vertical; }
   .edit-row input:focus, .edit-row select:focus, .edit-row textarea:focus{
     outline: none;
     border-color: var(--board-green-light);

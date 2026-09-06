@@ -36,16 +36,27 @@
     return trimmed;
   }
 
-  let entries = loadEntries();
+  let entries = loadEntries().map(e => {
+    let mapped = e;
+    if(mapped.progress === undefined && mapped.memo !== undefined){
+      const { memo, ...rest } = mapped;
+      mapped = { ...rest, progress: memo };
+    }
+    if(mapped.completed === undefined){
+      mapped = { ...mapped, completed: false };
+    }
+    return mapped;
+  });
   let categories = loadCategories();
   let activeCategory = 'すべて';
   let editingId = null;
   let expandedIds = new Set(); 
+  let quickEditId = null;
 
   const form = document.getElementById('entry-form');
   const titleInput = document.getElementById('f-title');
   const urlInput = document.getElementById('f-url');
-  const memoInput = document.getElementById('f-memo');
+  const progressInput = document.getElementById('f-progress');
   const categorySelect = document.getElementById('f-category');
   const categoryNewInput = document.getElementById('f-category-new');
   const catToggleBtn = document.getElementById('cat-toggle-btn');
@@ -140,11 +151,11 @@
     if(!valid) return;
 
     const category = (categoryNewInput.style.display === 'block' ? addCategory(categoryNewInput.value) : categorySelect.value.trim()) || 'その他';
-    const memo = memoInput.value.trim();
+    const progress = progressInput.value.trim();
 
     entries.unshift({
       id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
-      title, url, memo, category,
+      title, url, progress, category, completed: false,
       createdAt: new Date().toISOString()
     });
 
@@ -160,7 +171,7 @@
     }
   }
   titleInput.addEventListener('keydown', handleEnterSubmit);
-  memoInput.addEventListener('keydown', handleEnterSubmit);
+  progressInput.addEventListener('keydown', handleEnterSubmit);
 
   function editEntry(id){
     editingId = id;
@@ -185,6 +196,21 @@
   function toggleDetails(id){
     if(expandedIds.has(id)) expandedIds.delete(id);
     else expandedIds.add(id);
+    render();
+  }
+
+  function toggleCompleted(id){
+    const idx = entries.findIndex(en => en.id === id);
+    if(idx === -1) return;
+    const en = entries[idx];
+    if(!en.completed){
+      // 完了にする：今の進捗を退避して「完了」に書き換える
+      entries[idx] = { ...en, completed: true, progressBeforeDone: en.progress || '', progress: '完了' };
+    } else {
+      // 完了を解除：退避しておいた進捗に戻す
+      entries[idx] = { ...en, completed: false, progress: en.progressBeforeDone || '' };
+    }
+    saveEntries(entries);
     render();
   }
 
@@ -217,7 +243,7 @@
     const q = searchInput.value.trim().toLowerCase();
     let filtered = entries.filter(e => {
       const matchesCat = activeCategory === 'すべて' || e.category === activeCategory;
-      const matchesQ = !q || e.title.toLowerCase().includes(q) || (e.memo || '').toLowerCase().includes(q);
+      const matchesQ = !q || e.title.toLowerCase().includes(q) || (e.progress || '').toLowerCase().includes(q);
       return matchesCat && matchesQ;
     });
 
@@ -238,16 +264,16 @@
         return `
       <div class="card entry entry-editing" data-id="${e.id}">
         <div class="edit-row">
-          <textarea class="edit-title" placeholder="講座名・板書タイトル" rows="1">${escapeHtml(e.title)}</textarea>
+          <textarea class="edit-title" rows="1">${escapeHtml(e.title)}</textarea>
           <select class="edit-category">
             ${cats.map(c => `<option value="${escapeHtml(c)}" ${c === e.category ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
           </select>
         </div>
         <div class="edit-row">
-          <input type="url" class="edit-url" value="${escapeHtml(e.url)}" placeholder="GoogleドキュメントURL">
+          <input type="url" class="edit-url" value="${escapeHtml(e.url)}">
         </div>
         <div class="edit-row">
-          <textarea class="edit-memo" placeholder="メモ（任意）">${escapeHtml(e.memo || '')}</textarea>
+          <textarea class="edit-progress" rows="1">${escapeHtml(e.progress || '')}</textarea>
         </div>
         <span class="error-msg edit-error">タイトルと正しいURLを入力してください</span>
         <div class="edit-actions">
@@ -262,13 +288,23 @@
       const mainTitle = titleLines[0]; // 1行目
       const subTitle = titleLines.slice(1).join('\n'); // 2行目以降
 
+      const isQuickEditing = quickEditId === e.id;
+
       return `
-      <div class="card entry" data-id="${e.id}">
+      <div class="card entry ${e.completed ? 'is-done' : ''}" data-id="${e.id}">
+        <button type="button" class="done-toggle ${e.completed ? 'is-done' : ''}" title="${e.completed ? '未完了に戻す' : '完了にする'}" aria-pressed="${e.completed}">
+          <span class="done-check">✓</span>
+        </button>
         <div class="entry-main">
           <span class="entry-eyebrow-cat">${escapeHtml(e.category)}</span>
           <p class="entry-title ${expandedIds.has(e.id) ? 'is-open' : ''}"><a href="${escapeHtml(e.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(mainTitle)}</a></p>
           ${subTitle ? `<div class="entry-subtitle ${expandedIds.has(e.id) ? 'is-open' : ''}">${escapeHtml(subTitle)}</div>` : ''}
-          ${e.memo ? `<p class="entry-memo ${expandedIds.has(e.id) ? 'is-open' : ''}">${escapeHtml(e.memo)}</p>` : ''}
+          ${isQuickEditing
+            ? `<input type="text" class="progress-quick-input" value="${escapeHtml(e.progress || '')}">`
+            : (e.progress
+                ? `<p class="entry-progress progress-clickable ${expandedIds.has(e.id) ? 'is-open' : ''}" title="クリックして編集">${escapeHtml(e.progress)}</p>`
+                : `<button type="button" class="progress-add-btn">＋ 進捗を追加</button>`)
+          }
         </div>
         <div class="entry-bottom">
           <div class="entry-actions">
@@ -280,6 +316,48 @@
       </div>`;
     }).join('');
 
+    entryList.querySelectorAll('.progress-clickable, .progress-add-btn').forEach(el => {
+      el.addEventListener('click', (e) => {
+        quickEditId = e.target.closest('.entry').dataset.id;
+        render();
+      });
+    });
+
+    entryList.querySelectorAll('.progress-quick-input').forEach(input => {
+      const id = input.closest('.entry').dataset.id;
+      input.focus();
+      const len = input.value.length;
+      input.setSelectionRange(len, len);
+
+      let saved = false;
+      const save = () => {
+        if(saved) return;
+        saved = true;
+        const idx = entries.findIndex(en => en.id === id);
+        if(idx !== -1){
+          entries[idx] = { ...entries[idx], progress: input.value.trim() };
+          saveEntries(entries);
+        }
+        quickEditId = null;
+        render();
+      };
+
+      input.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' && !e.isComposing){
+          e.preventDefault();
+          save();
+        } else if(e.key === 'Escape'){
+          saved = true;
+          quickEditId = null;
+          render();
+        }
+      });
+      input.addEventListener('blur', save);
+    });
+
+    entryList.querySelectorAll('.done-toggle').forEach(btn => {
+      btn.addEventListener('click', (e) => toggleCompleted(e.target.closest('.entry').dataset.id));
+    });
     entryList.querySelectorAll('.edit-btn').forEach(btn => {
       btn.addEventListener('click', (e) => editEntry(e.target.closest('.entry').dataset.id));
     });
@@ -297,7 +375,7 @@
       btn.addEventListener('click', cancelInlineEdit);
     });
 
-    entryList.querySelectorAll('.edit-title, .edit-memo').forEach(el => {
+    entryList.querySelectorAll('.edit-title, .edit-progress').forEach(el => {
       el.addEventListener('keydown', (e) => {
         if(e.key === 'Enter' && !e.shiftKey && !e.isComposing){
           e.preventDefault();
@@ -314,14 +392,14 @@
         const title = row.querySelector('.edit-title').value.trim();
         const url = row.querySelector('.edit-url').value.trim();
         const category = row.querySelector('.edit-category').value;
-        const memo = row.querySelector('.edit-memo').value.trim();
+        const progress = row.querySelector('.edit-progress').value.trim();
         const errEl = row.querySelector('.edit-error');
         if(!title || !url || !isValidUrl(url)){
           errEl.style.display = 'block';
           return;
         }
         errEl.style.display = 'none';
-        saveInlineEdit(id, { title, url, category, memo });
+        saveInlineEdit(id, { title, url, category, progress });
       });
     });
   }

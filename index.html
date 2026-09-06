@@ -26,8 +26,8 @@
       <form id="entry-form" novalidate>
         <div class="field-row">
             <div class="field full">
-                <label for="f-title">講座名・板書タイトル</label>
-                <textarea id="f-title" placeholder="例）ゼロからのPython講座 第3章 リスト操作" rows="1"></textarea>
+                <label for="f-title">講座名</label>
+                <textarea id="f-title" rows="1"></textarea>
                 <span class="error-msg" id="err-title">タイトルを入力してください</span>
             </div>
         </div>
@@ -38,20 +38,20 @@
               <select id="f-category">
                 <option value="">選択してください</option>
               </select>
-              <input type="text" id="f-category-new" placeholder="新しいカテゴリ名">
+              <input type="text" id="f-category-new">
               <button type="button" class="cat-toggle" id="cat-toggle-btn">新規</button>
             </div>
           </div>
           <div class="field">
             <label for="f-url">GoogleドキュメントURL</label>
-            <input type="url" id="f-url" placeholder="https://docs.google.com/document/d/...">
+            <input type="url" id="f-url">
             <span class="error-msg" id="err-url">正しいURLを入力してください</span>
           </div>
         </div>
         <div class="field-row">
           <div class="field full">
-            <label for="f-memo">メモ</label>
-            <textarea id="f-memo" ></textarea>
+            <label for="f-progress">進捗</label>
+            <textarea id="f-progress" rows="1"></textarea>
           </div>
         </div>
         <div class="form-actions">
@@ -66,7 +66,7 @@
     <h2 class="section-title">一覧</h2>
     <div class="toolbar">
       <div class="search-box">
-        <input type="text" id="search-input" placeholder="タイトル・メモで検索">
+        <input type="text" id="search-input">
       </div>
     </div>
     <div class="toolbar" id="category-filters"></div>
